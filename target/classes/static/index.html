@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduFlow — Online Enrollment System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f7f5f0;
+    --cream: #ede9e0;
+    --accent: #c84b31;
+    --accent2: #2563a8;
+    --gold: #d4a843;
+    --green: #2d7a4f;
+    --surface: #ffffff;
+    --border: rgba(13,13,13,0.10);
+    --shadow: 0 2px 20px rgba(13,13,13,0.08);
+    --r: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed; top: 0; left: 0;
+    width: 260px; height: 100vh;
+    background: var(--ink);
+    display: flex; flex-direction: column;
+    z-index: 100; overflow: hidden;
+  }
+
+  .logo-area {
+    padding: 32px 28px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px; background: var(--accent);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 20px; height: 20px; fill: white; }
+  .logo-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    color: white; letter-spacing: -0.5px;
+  }
+  .logo-tagline {
+    font-size: 11px; color: rgba(255,255,255,0.4);
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+
+  .nav-section {
+    padding: 20px 16px 8px;
+    font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: rgba(255,255,255,0.28); font-weight: 500;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 16px; margin: 2px 8px;
+    border-radius: 10px; cursor: pointer;
+    color: rgba(255,255,255,0.55); font-size: 14px; font-weight: 400;
+    transition: all 0.18s; user-select: none;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+  .nav-item.active {
+    background: var(--accent); color: white; font-weight: 500;
+    border-color: rgba(255,255,255,0.1);
+  }
+  .nav-item .nav-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.07); flex-shrink: 0;
+    font-size: 15px;
+  }
+  .nav-item.active .nav-icon { background: rgba(255,255,255,0.18); }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+  .db-badge {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: rgba(255,255,255,0.05);
+    border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+  }
+  .db-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+  .db-text { font-size: 12px; color: rgba(255,255,255,0.45); }
+  .db-name { color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 500; }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 260px;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(247,245,240,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 36px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700;
+    flex: 1;
+  }
+  .topbar-search {
+    position: relative;
+  }
+  .topbar-search input {
+    padding: 9px 16px 9px 38px;
+    border: 1px solid var(--border);
+    border-radius: 100px; font-size: 13px;
+    background: var(--surface); width: 220px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none; transition: all 0.18s;
+  }
+  .topbar-search input:focus { border-color: var(--accent); width: 260px; }
+  .topbar-search .s-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; color: #999;
+  }
+
+  .content { padding: 36px; flex: 1; }
+
+  /* ── SECTION ── */
+  .section { display: none; animation: fadeUp 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px 22px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; right: -10px; top: -10px;
+    width: 70px; height: 70px; border-radius: 50%;
+    opacity: 0.07;
+  }
+  .stat-card.c1::before { background: var(--accent); }
+  .stat-card.c2::before { background: var(--accent2); }
+  .stat-card.c3::before { background: var(--green); }
+  .stat-card.c4::before { background: var(--gold); }
+  .stat-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 28px 30px;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .card-icon.red { background: #fdf0ed; }
+  .card-icon.blue { background: #edf4fd; }
+  .card-icon.green { background: #edf7f1; }
+  .card-icon.gold { background: #fdf8ec; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+  .card-sub { font-size: 12px; color: #999; }
+
+  /* ── FORM GRID ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: span 2; }
+  .form-group label { font-size: 12px; font-weight: 500; letter-spacing: 0.3px; color: #555; }
+  .form-group input, .form-group select {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px; font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper); outline: none;
+    transition: all 0.15s; color: var(--ink);
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--accent); background: white;
+    box-shadow: 0 0 0 3px rgba(200,75,49,0.08);
+  }
+  .form-group input::placeholder { color: #bbb; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn {
+    padding: 10px 22px; border-radius: 9px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #b03e27; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,75,49,0.3); }
+  .btn-ghost { background: var(--cream); color: var(--ink); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: #e5e1d8; }
+  .btn-danger { background: #fdf0ed; color: var(--accent); border: 1px solid rgba(200,75,49,0.2); }
+  .btn-danger:hover { background: var(--accent); color: white; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 7px; }
+
+  /* ── TOAST ── */
+  .toast-wrap { position: fixed; bottom: 28px; right: 28px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    padding: 13px 20px; border-radius: 11px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px;
+    animation: slideIn 0.3s ease; max-width: 320px;
+  }
+  @keyframes slideIn { from { transform: translateX(40px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+  .toast.success { background: #1a3d2a; color: #6fdb9f; }
+  .toast.error { background: #3d1a1a; color: #f08080; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr { background: var(--cream); }
+  th {
+    padding: 12px 16px; text-align: left; font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase; color: #777; font-weight: 500;
+  }
+  td { padding: 13px 16px; border-top: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: #faf9f7; }
+  .td-actions { display: flex; gap: 6px; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 100px; font-size: 11px; font-weight: 500;
+  }
+  .badge-a { background: #edf7f1; color: #2d7a4f; }
+  .badge-b { background: #edf4fd; color: #2563a8; }
+  .badge-c { background: #fdf8ec; color: #a07820; }
+  .badge-d { background: #fdf3ec; color: #b05a20; }
+  .badge-f { background: #fdf0ed; color: #b03030; }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+
+  .empty-state {
+    text-align: center; padding: 48px; color: #bbb;
+  }
+  .empty-state .e-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── SEARCH BAR ── */
+  .table-toolbar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .search-box {
+    position: relative; flex: 1; max-width: 340px;
+  }
+  .search-box input {
+    width: 100%; padding: 9px 14px 9px 36px;
+    border: 1.5px solid var(--border); border-radius: 9px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    background: var(--surface); outline: none; transition: all 0.15s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box .si { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 14px; }
+
+  /* ── DASHBOARD ── */
+  .welcome-banner {
+    background: var(--ink); color: white; border-radius: 16px;
+    padding: 32px 36px; margin-bottom: 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    overflow: hidden; position: relative;
+  }
+  .welcome-banner::after {
+    content: 'EduFlow'; position: absolute; right: -20px; top: -20px;
+    font-family: 'Syne', sans-serif; font-size: 120px; font-weight: 800;
+    color: rgba(255,255,255,0.03); pointer-events: none; user-select: none;
+  }
+  .wb-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .wb-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
+  .wb-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
+  .btn-white { background: white; color: var(--ink); padding: 10px 20px; border-radius: 9px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .btn-white:hover { background: #eee; }
+
+  .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .quick-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 22px; cursor: pointer;
+    transition: all 0.18s; text-align: left;
+  }
+  .quick-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); border-color: var(--accent); }
+  .qc-icon { font-size: 26px; margin-bottom: 12px; }
+  .qc-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .qc-sub { font-size: 12px; color: #999; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-badge">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="logo-name">EduFlow</span>
+    </div>
+    <div class="logo-tagline">Online Enrollment System</div>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <div class="nav-item active" onclick="showSection('dashboard', this)">
+    <div class="nav-icon">🏠</div> Dashboard
+  </div>
+
+  <div class="nav-section">Records</div>
+  <div class="nav-item" onclick="showSection('students', this)">
+    <div class="nav-icon">👤</div> Students
+  </div>
+  <div class="nav-item" onclick="showSection('teachers', this)">
+    <div class="nav-icon">🎓</div> Teachers
+  </div>
+  <div class="nav-item" onclick="showSection('courses', this)">
+    <div class="nav-icon">📚</div> Courses
+  </div>
+  <div class="nav-item" onclick="showSection('enrollment', this)">
+    <div class="nav-icon">📋</div> Enrollment
+  </div>
+  <div class="nav-item" onclick="showSection('fees', this)">
+    <div class="nav-icon">💰</div> Course Fees
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="db-badge">
+      <div class="db-dot"></div>
+      <div>
+        <div class="db-name">miniproject</div>
+        <div class="db-text">localhost:3306</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-search">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="globalSearch" placeholder="Search records..."/>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="sec-dashboard" class="section active">
+      <div class="welcome-banner">
+        <div>
+          <div class="wb-title">Welcome to EduFlow</div>
+          <div class="wb-sub">Manage students, courses & enrollments from one place</div>
+        </div>
+        <div class="wb-actions">
+          <button class="btn-white" onclick="showSection('students', document.querySelectorAll('.nav-item')[1])">+ New Student</button>
+          <button class="btn-white" onclick="showSection('enrollment', document.querySelectorAll('.nav-item')[4])">+ Enroll Now</button>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card c1">
+          <div class="stat-label">Total Students</div>
+          <div class="stat-num" id="dash-students">—</div>
+          <div class="stat-sub">Registered</div>
+        </div>
+        <div class="stat-card c2">
+          <div class="stat-label">Courses</div>
+          <div class="stat-num" id="dash-courses">—</div>
+          <div class="stat-sub">Active</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="stat-label">Enrollments</div>
+          <div class="stat-num" id="dash-enrollments">—</div>
+          <div class="stat-sub">Total</div>
+        </div>
+        <div class="stat-card c4">
+          <div class="stat-label">Teachers</div>
+          <div class="stat-num" id="dash-teachers">—</div>
+          <div class="stat-sub">Faculty</div>
+        </div>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-card" onclick="showSection('students', document.querySelectorAll('.nav-item')[1])">
+          <div class="qc-icon">👤</div>
+          <div class="qc-title">Manage Students</div>
+          <div class="qc-sub">Add, edit and view student records</div>
+        </div>
+        <div class="quick-card" onclick="showSection('courses', document.querySelectorAll('.nav-item')[3])">
+          <div class="qc-icon">📚</div>
+          <div class="qc-title">Course Catalogue</div>
+          <div class="qc-sub">Browse and manage all courses</div>
+        </div>
+        <div class="quick-card" onclick="showSection('enrollment', document.querySelectorAll('.nav-item')[4])">
+          <div class="qc-icon">📋</div>
+          <div class="qc-title">Enroll Students</div>
+          <div class="qc-sub">Register students into courses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="sec-students" class="section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon red">👤</div>
+          <div><div class="card-title">Student Registration</div><div class="card-sub">Add or update a student record</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Student ID *</label><input id="s-id" placeholder="e.g. S001"/></div>
+          <div class="form-group"><label>Full Name *</label><input id="s-name" placeholder="Student full name"/></div>
+          <div class="form-group"><label>Father's Name</label><input id="s-father" placeholder="Father's name"/></div>
+          <div class="form-group"><label>Father's Mobile</label><input id="s-fmob" placeholder="10-digit number"/></div>
+          <div class="form-group"><label>Mother's Name</label><input id="s-mother" placeholder="Mother's name"/></div>
+          <div class="form-group"><label>Student Mobile</label><input id="s-mob" placeholder="10-digit number"/></div>
+          <div class="form-group"><label>Email</label><input id="s-email" type="email" placeholder="student@email.com"/></div>
+          <div class="form-group"><label>Date of Birth</label><input id="s-dob" type="date"/></div>
+          <div class="form-group full"><label>Address</label><input id="s-addr" placeholder="Full address"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveStudent()">💾 Save Student</button>
+          <button class="btn btn-ghost" onclick="clearForm('s-id','s-name','s-father','s-fmob','s-mother','s-mob','s-email','s-dob','s-addr')">✕ Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon red">📋</div>
+          <div><div class="card-title">Student Directory</div><div class="card-sub">All registered students</div></div>
+        </div>
+        <div class="table-toolbar">
+          <div class="search-box"><span class="si">🔍</span><input type="text" id="s-search" placeholder="Search by name or ID..." oninput="loadStudents()"/></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadStudents()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="studentTable">
+            <thead><tr><th>Student</th><th>Mobile</th><th>Email</th><th>DOB</th><th>Address</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHERS -->
+    <div id="sec-teachers" class="section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">🎓</div>
+          <div><div class="card-title">Teacher Registration</div><div class="card-sub">Add or update faculty records</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Teacher ID *</label><input id="t-id" placeholder="e.g. T001"/></div>
+          <div class="form-group"><label>Full Name *</label><input id="t-name" placeholder="Dr. / Prof. Name"/></div>
+          <div class="form-group"><label>Designation</label><input id="t-desig" placeholder="e.g. Professor"/></div>
+          <div class="form-group"><label>Email</label><input id="t-email" type="email" placeholder="teacher@college.edu"/></div>
+          <div class="form-group"><label>Phone</label><input id="t-phone" placeholder="10-digit number"/></div>
+          <div class="form-group"><label>Hire Date</label><input id="t-hire" type="date"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveTeacher()">💾 Save Teacher</button>
+          <button class="btn btn-ghost" onclick="clearForm('t-id','t-name','t-desig','t-email','t-phone','t-hire')">✕ Clear</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">📋</div>
+          <div><div class="card-title">Faculty Directory</div><div class="card-sub">All teaching staff</div></div>
+        </div>
+        <div class="table-toolbar">
+          <div class="search-box"><span class="si">🔍</span><input type="text" id="t-search" placeholder="Search teachers..." oninput="loadTeachers()"/></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadTeachers()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="teacherTable">
+            <thead><tr><th>Teacher</th><th>Designation</th><th>Email</th><th>Phone</th><th>Hired</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div id="sec-courses" class="section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">📚</div>
+          <div><div class="card-title">Course Management</div><div class="card-sub">Add or update course details</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Course Code *</label><input id="c-code" placeholder="e.g. CS101"/></div>
+          <div class="form-group"><label>Course Title *</label><input id="c-title" placeholder="e.g. Database Systems"/></div>
+          <div class="form-group"><label>Credits</label><input id="c-credit" type="number" min="1" max="6" placeholder="3"/></div>
+          <div class="form-group"><label>Teacher ID</label><input id="c-teacher" placeholder="e.g. T001"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveCourse()">💾 Save Course</button>
+          <button class="btn btn-ghost" onclick="clearForm('c-code','c-title','c-credit','c-teacher')">✕ Clear</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">📋</div>
+          <div><div class="card-title">Course Catalogue</div><div class="card-sub">All available courses</div></div>
+        </div>
+        <div class="table-toolbar">
+          <div class="search-box"><span class="si">🔍</span><input type="text" id="c-search" placeholder="Search courses..." oninput="loadCourses()"/></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadCourses()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="courseTable">
+            <thead><tr><th>Code</th><th>Course Title</th><th>Credits</th><th>Teacher ID</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENROLLMENT -->
+    <div id="sec-enrollment" class="section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon gold">📋</div>
+          <div><div class="card-title">Enroll Student</div><div class="card-sub">Register a student into a course</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Enroll ID *</label><input id="e-id" type="number" placeholder="e.g. 1001"/></div>
+          <div class="form-group"><label>Student ID *</label><input id="e-student" placeholder="e.g. S001"/></div>
+          <div class="form-group"><label>Course Code *</label><input id="e-course" placeholder="e.g. CS101"/></div>
+          <div class="form-group"><label>Enrollment Date</label><input id="e-date" type="date"/></div>
+          <div class="form-group"><label>Grade</label>
+            <select id="e-grade"><option value="">-- Select Grade --</option><option>A</option><option>B</option><option>C</option><option>D</option><option>F</option></select>
+          </div>
+          <div class="form-group"><label>Fee ID</label><input id="e-fee" placeholder="e.g. F001"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveEnrollment()">📋 Enroll Student</button>
+          <button class="btn btn-ghost" onclick="clearForm('e-id','e-student','e-course','e-date','e-fee'); document.getElementById('e-grade').value=''">✕ Clear</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon gold">📊</div>
+          <div><div class="card-title">Enrollment Records</div><div class="card-sub">All course enrollments</div></div>
+        </div>
+        <div class="table-toolbar">
+          <div class="search-box"><span class="si">🔍</span><input type="text" id="e-search" placeholder="Search enrollments..." oninput="loadEnrollments()"/></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadEnrollments()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="enrollTable">
+            <thead><tr><th>Enroll ID</th><th>Student ID</th><th>Course</th><th>Date</th><th>Grade</th><th>Fee ID</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEES -->
+    <div id="sec-fees" class="section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon gold">💰</div>
+          <div><div class="card-title">Course Fee Entry</div><div class="card-sub">Define fee structure for courses</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Fee ID *</label><input id="f-id" placeholder="e.g. F001"/></div>
+          <div class="form-group"><label>Course Code *</label><input id="f-course" placeholder="e.g. CS101"/></div>
+          <div class="form-group"><label>Amount (₹)</label><input id="f-amount" type="number" placeholder="30000"/></div>
+          <div class="form-group"><label>Semester</label><input id="f-sem" type="number" placeholder="1"/></div>
+          <div class="form-group"><label>Due Date</label><input id="f-due" type="date"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveFee()">💾 Save Fee</button>
+          <button class="btn btn-ghost" onclick="clearForm('f-id','f-course','f-amount','f-sem','f-due')">✕ Clear</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon gold">📋</div>
+          <div><div class="card-title">Fee Records</div><div class="card-sub">All course fee entries</div></div>
+        </div>
+        <div class="table-toolbar">
+          <div class="search-box"><span class="si">🔍</span><input type="text" id="f-search" placeholder="Search fees..." oninput="loadFees()"/></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadFees()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="feeTable">
+            <thead><tr><th>Fee ID</th><th>Course</th><th>Amount</th><th>Semester</th><th>Due Date</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const BASE = "http://localhost:8080";
+const avatarColors = ['#c84b31','#2563a8','#2d7a4f','#8b5cf6','#d4a843','#0891b2'];
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+}
+
+function avatarColor(str) {
+  let h = 0; for (let c of (str||'')) h = (h*31 + c.charCodeAt(0)) % avatarColors.length;
+  return avatarColors[h];
+}
+
+function showSection(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {dashboard:'Dashboard', students:'Students', teachers:'Teachers', courses:'Courses', enrollment:'Enrollment', fees:'Course Fees'};
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  const loaders = {students:loadStudents, teachers:loadTeachers, courses:loadCourses, enrollment:loadEnrollments, fees:loadFees, dashboard:loadDashboard};
+  if (loaders[name]) loaders[name]();
+}
+
+function toast(msg, type='success') {
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast '+type;
+  t.innerHTML = (type==='success'?'✓':'✕') + ' ' + msg;
+  w.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function clearForm(...ids) { ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); }
+
+function gradeClass(g) {
+  const m = {A:'badge-a',B:'badge-b',C:'badge-c',D:'badge-d',F:'badge-f'};
+  return m[g] || '';
+}
+
+// ─── DASHBOARD ─────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [s,c,e,t] = await Promise.all([
+      fetch(`${BASE}/student`).then(r=>r.json()),
+      fetch(`${BASE}/course`).then(r=>r.json()),
+      fetch(`${BASE}/enrollment`).then(r=>r.json()),
+      fetch(`${BASE}/teacher`).then(r=>r.json()),
+    ]);
+    document.getElementById('dash-students').textContent = s.length;
+    document.getElementById('dash-courses').textContent = c.length;
+    document.getElementById('dash-enrollments').textContent = e.length;
+    document.getElementById('dash-teachers').textContent = t.length;
+  } catch(err) {
+    ['dash-students','dash-courses','dash-enrollments','dash-teachers'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+  }
+}
+
+// ─── STUDENTS ──────────────────────────────────────────────
+async function loadStudents() {
+  const q = document.getElementById('s-search').value;
+  try {
+    const data = await fetch(`${BASE}/student?search=${encodeURIComponent(q)}`).then(r=>r.json());
+    const tbody = document.querySelector('#studentTable tbody');
+    if (!data.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="e-icon">👤</div><p>No students found</p></div></td></tr>`; return; }
+    tbody.innerHTML = data.map(s => {
+      const col = avatarColor(s.Student_ID);
+      const ini = getInitials(s.Student_Name);
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:${col}20;color:${col}">${ini}</div>
+          <div><div style="font-weight:500">${s.Student_Name||''}</div><div style="font-size:11px;color:#999">${s.Student_ID}</div></div>
+        </div></td>
+        <td>${s.Student_Mobile||'—'}</td>
+        <td>${s.Email||'—'}</td>
+        <td>${s.DOB||'—'}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.Address||'—'}</td>
+        <td><div class="td-actions">
+          <button class="btn btn-ghost btn-sm" onclick='editStudent(${JSON.stringify(s)})'>✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent('${s.Student_ID}')">🗑</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { toast('Failed to load students','error'); }
+}
+
+async function saveStudent() {
+  const payload = {
+    Student_ID: document.getElementById('s-id').value.trim(),
+    Student_Name: document.getElementById('s-name').value.trim(),
+    Father_Name: document.getElementById('s-father').value.trim(),
+    Father_Mobile: document.getElementById('s-fmob').value.trim(),
+    Mother_Name: document.getElementById('s-mother').value.trim(),
+    Student_Mobile: document.getElementById('s-mob').value.trim(),
+    Email: document.getElementById('s-email').value.trim(),
+    DOB: document.getElementById('s-dob').value,
+    Address: document.getElementById('s-addr').value.trim()
+  };
+  if (!payload.Student_ID || !payload.Student_Name) return toast('Student ID and Name are required','error');
+  try {
+    const res = await fetch(`${BASE}/student`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await res.json();
+    toast(r.message || 'Student saved successfully');
+    clearForm('s-id','s-name','s-father','s-fmob','s-mother','s-mob','s-email','s-dob','s-addr');
+    loadStudents();
+  } catch(e) { toast('Error saving student','error'); }
+}
+
+function editStudent(s) {
+  const m = {'s-id':'Student_ID','s-name':'Student_Name','s-father':'Father_Name','s-fmob':'Father_Mobile','s-mother':'Mother_Name','s-mob':'Student_Mobile','s-email':'Email','s-dob':'DOB','s-addr':'Address'};
+  Object.entries(m).forEach(([id,k]) => { document.getElementById(id).value = s[k]||''; });
+  document.querySelector('.card-title').scrollIntoView({behavior:'smooth'});
+}
+
+async function deleteStudent(id) {
+  if (!confirm(`Delete student ${id}?`)) return;
+  try {
+    const res = await fetch(`${BASE}/student?id=${id}`, { method:'DELETE' });
+    const r = await res.json();
+    toast(r.message || 'Deleted');
+    loadStudents();
+  } catch(e) { toast('Error deleting','error'); }
+}
+
+// ─── TEACHERS ──────────────────────────────────────────────
+async function loadTeachers() {
+  const q = document.getElementById('t-search').value;
+  try {
+    const data = await fetch(`${BASE}/teacher?search=${encodeURIComponent(q)}`).then(r=>r.json());
+    const tbody = document.querySelector('#teacherTable tbody');
+    if (!data.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="e-icon">🎓</div><p>No teachers found</p></div></td></tr>`; return; }
+    tbody.innerHTML = data.map(t => {
+      const col = avatarColor(t.Teacher_ID);
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:${col}20;color:${col}">${getInitials(t.Teacher_Name)}</div>
+          <div><div style="font-weight:500">${t.Teacher_Name||''}</div><div style="font-size:11px;color:#999">${t.Teacher_ID}</div></div>
+        </div></td>
+        <td>${t.Designation||'—'}</td>
+        <td>${t.Email||'—'}</td>
+        <td>${t.Phone||'—'}</td>
+        <td>${t.Hire_Date||'—'}</td>
+        <td><div class="td-actions">
+          <button class="btn btn-ghost btn-sm" onclick='editTeacher(${JSON.stringify(t)})'>✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTeacher('${t.Teacher_ID}')">🗑</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { toast('Failed to load teachers','error'); }
+}
+
+async function saveTeacher() {
+  const payload = {
+    Teacher_ID: document.getElementById('t-id').value.trim(),
+    Teacher_Name: document.getElementById('t-name').value.trim(),
+    Designation: document.getElementById('t-desig').value.trim(),
+    Email: document.getElementById('t-email').value.trim(),
+    Phone: document.getElementById('t-phone').value.trim(),
+    Hire_Date: document.getElementById('t-hire').value
+  };
+  if (!payload.Teacher_ID || !payload.Teacher_Name) return toast('Teacher ID and Name are required','error');
+  try {
+    const res = await fetch(`${BASE}/teacher`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await res.json();
+    toast(r.message || 'Teacher saved');
+    clearForm('t-id','t-name','t-desig','t-email','t-phone','t-hire');
+    loadTeachers();
+  } catch(e) { toast('Error saving teacher','error'); }
+}
+
+function editTeacher(t) {
+  const m = {'t-id':'Teacher_ID','t-name':'Teacher_Name','t-desig':'Designation','t-email':'Email','t-phone':'Phone','t-hire':'Hire_Date'};
+  Object.entries(m).forEach(([id,k]) => { document.getElementById(id).value = t[k]||''; });
+}
+
+async function deleteTeacher(id) {
+  if (!confirm(`Delete teacher ${id}?`)) return;
+  try {
+    const res = await fetch(`${BASE}/teacher?id=${id}`, { method:'DELETE' });
+    const r = await res.json();
+    toast(r.message || 'Deleted');
+    loadTeachers();
+  } catch(e) { toast('Error deleting','error'); }
+}
+
+// ─── COURSES ───────────────────────────────────────────────
+async function loadCourses() {
+  const q = document.getElementById('c-search').value;
+  try {
+    const data = await fetch(`${BASE}/course?search=${encodeURIComponent(q)}`).then(r=>r.json());
+    const tbody = document.querySelector('#courseTable tbody');
+    if (!data.length) { tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="e-icon">📚</div><p>No courses found</p></div></td></tr>`; return; }
+    tbody.innerHTML = data.map(c => `<tr>
+      <td><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">${c.Course_Code}</span></td>
+      <td style="font-weight:500">${c.Course_Title||''}</td>
+      <td><span class="badge badge-b">${c.Course_Credit} cr</span></td>
+      <td>${c.Teacher_ID||'—'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-ghost btn-sm" onclick='editCourse(${JSON.stringify(c)})'>✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.Course_Code}')">🗑</button>
+      </div></td>
+    </tr>`).join('');
+  } catch(e) { toast('Failed to load courses','error'); }
+}
+
+async function saveCourse() {
+  const payload = {
+    Course_Code: document.getElementById('c-code').value.trim(),
+    Course_Title: document.getElementById('c-title').value.trim(),
+    Course_Credit: document.getElementById('c-credit').value,
+    Teacher_ID: document.getElementById('c-teacher').value.trim()
+  };
+  if (!payload.Course_Code || !payload.Course_Title) return toast('Course Code and Title required','error');
+  try {
+    const res = await fetch(`${BASE}/course`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await res.json();
+    toast(r.message || 'Course saved');
+    clearForm('c-code','c-title','c-credit','c-teacher');
+    loadCourses();
+  } catch(e) { toast('Error saving course','error'); }
+}
+
+function editCourse(c) {
+  const m = {'c-code':'Course_Code','c-title':'Course_Title','c-credit':'Course_Credit','c-teacher':'Teacher_ID'};
+  Object.entries(m).forEach(([id,k]) => { document.getElementById(id).value = c[k]||''; });
+}
+
+async function deleteCourse(code) {
+  if (!confirm(`Delete course ${code}?`)) return;
+  try {
+    const res = await fetch(`${BASE}/course?code=${code}`, { method:'DELETE' });
+    const r = await res.json();
+    toast(r.message || 'Deleted');
+    loadCourses();
+  } catch(e) { toast('Error deleting','error'); }
+}
+
+// ─── ENROLLMENT ────────────────────────────────────────────
+async function loadEnrollments() {
+  const q = document.getElementById('e-search').value;
+  try {
+    const data = await fetch(`${BASE}/enrollment?search=${encodeURIComponent(q)}`).then(r=>r.json());
+    const tbody = document.querySelector('#enrollTable tbody');
+    if (!data.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="e-icon">📋</div><p>No enrollments found</p></div></td></tr>`; return; }
+    tbody.innerHTML = data.map(e => `<tr>
+      <td style="font-weight:600">#${e.Enroll_ID}</td>
+      <td>${e.Student_ID}</td>
+      <td><span style="font-weight:500">${e.Course_Code}</span></td>
+      <td>${e.Enrollment_Date||'—'}</td>
+      <td>${e.Grade ? `<span class="badge ${gradeClass(e.Grade)}">${e.Grade}</span>` : '—'}</td>
+      <td>${e.Fee_ID||'—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteEnrollment(${e.Enroll_ID})">🗑</button></td>
+    </tr>`).join('');
+  } catch(e) { toast('Failed to load enrollments','error'); }
+}
+
+async function saveEnrollment() {
+  const payload = {
+    Enroll_ID: document.getElementById('e-id').value,
+    Student_ID: document.getElementById('e-student').value.trim(),
+    Course_Code: document.getElementById('e-course').value.trim(),
+    Enrollment_Date: document.getElementById('e-date').value,
+    Grade: document.getElementById('e-grade').value,
+    Fee_ID: document.getElementById('e-fee').value.trim()
+  };
+  if (!payload.Enroll_ID || !payload.Student_ID || !payload.Course_Code) return toast('Enroll ID, Student ID and Course Code required','error');
+  try {
+    const res = await fetch(`${BASE}/enrollment`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await res.json();
+    toast(r.message || 'Enrolled successfully');
+    clearForm('e-id','e-student','e-course','e-date','e-fee');
+    document.getElementById('e-grade').value = '';
+    loadEnrollments();
+  } catch(e) { toast('Error saving enrollment','error'); }
+}
+
+async function deleteEnrollment(id) {
+  if (!confirm(`Delete enrollment #${id}?`)) return;
+  try {
+    const res = await fetch(`${BASE}/enrollment?id=${id}`, { method:'DELETE' });
+    const r = await res.json();
+    toast(r.message || 'Deleted');
+    loadEnrollments();
+  } catch(e) { toast('Error deleting','error'); }
+}
+
+// ─── FEES ──────────────────────────────────────────────────
+async function loadFees() {
+  const q = document.getElementById('f-search').value;
+  try {
+    const data = await fetch(`${BASE}/fees?search=${encodeURIComponent(q)}`).then(r=>r.json());
+    const tbody = document.querySelector('#feeTable tbody');
+    if (!data.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="e-icon">💰</div><p>No fee records found</p></div></td></tr>`; return; }
+    tbody.innerHTML = data.map(f => `<tr>
+      <td style="font-weight:600">${f.Fee_ID}</td>
+      <td>${f.Course_Code}</td>
+      <td style="font-weight:600;color:var(--green)">₹${Number(f.Amount).toLocaleString('en-IN')}</td>
+      <td>Semester ${f.Semester||'—'}</td>
+      <td>${f.Due_Date||'—'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-ghost btn-sm" onclick='editFee(${JSON.stringify(f)})'>✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteFee('${f.Fee_ID}')">🗑</button>
+      </div></td>
+    </tr>`).join('');
+  } catch(e) { toast('Failed to load fees','error'); }
+}
+
+async function saveFee() {
+  const payload = {
+    Fee_ID: document.getElementById('f-id').value.trim(),
+    Course_Code: document.getElementById('f-course').value.trim(),
+    Amount: document.getElementById('f-amount').value,
+    Semester: document.getElementById('f-sem').value,
+    Due_Date: document.getElementById('f-due').value
+  };
+  if (!payload.Fee_ID || !payload.Course_Code) return toast('Fee ID and Course Code required','error');
+  try {
+    const res = await fetch(`${BASE}/fees`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await res.json();
+    toast(r.message || 'Fee record saved');
+    clearForm('f-id','f-course','f-amount','f-sem','f-due');
+    loadFees();
+  } catch(e) { toast('Error saving fee','error'); }
+}
+
+function editFee(f) {
+  const m = {'f-id':'Fee_ID','f-course':'Course_Code','f-amount':'Amount','f-sem':'Semester','f-due':'Due_Date'};
+  Object.entries(m).forEach(([id,k]) => { document.getElementById(id).value = f[k]||''; });
+}
+
+async function deleteFee(id) {
+  if (!confirm(`Delete fee ${id}?`)) return;
+  try {
+    const res = await fetch(`${BASE}/fees?id=${id}`, { method:'DELETE' });
+    const r = await res.json();
+    toast(r.message || 'Deleted');
+    loadFees();
+  } catch(e) { toast('Error deleting','error'); }
+}
+
+// Global search
+document.getElementById('globalSearch').addEventListener('input', function() {
+  const active = document.querySelector('.section.active').id.replace('sec-','');
+  const targets = {students:'s-search', teachers:'t-search', courses:'c-search', enrollment:'e-search', fees:'f-search'};
+  if (targets[active]) {
+    document.getElementById(targets[active]).value = this.value;
+    const loaders = {students:loadStudents, teachers:loadTeachers, courses:loadCourses, enrollment:loadEnrollments, fees:loadFees};
+    if (loaders[active]) loaders[active]();
+  }
+});
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>

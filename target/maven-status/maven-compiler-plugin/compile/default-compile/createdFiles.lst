@@ -1,0 +1,6 @@
+com\eduflow\StudentController.class
+com\eduflow\CourseController.class
+com\eduflow\CourseFeeController.class
+com\eduflow\EnrollmentController.class
+com\eduflow\TeacherController.class
+com\eduflow\EduFlowApplication.class
